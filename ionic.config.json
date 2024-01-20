@@ -1,0 +1,7 @@
+{
+  "name": "hayago",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
