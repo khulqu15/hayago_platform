@@ -1,9 +1,9 @@
 <template>
     <ion-page>
         <ion-content :fullscreen="true">
-            <div class="relative min-h-screen overflow-hidden bg-base-100">
-                <img src="/images/bg-home.png" alt="bg home" class="w-full h-full object-cover object-center absolute top-12 opacity-40">
-                <div class="absolute left-0 -bottom-2 p-4 text-base-content bg-gradient-to-t from-base-100 pt-24">
+            <div class="relative min-h-screen overflow-hidden w-full bg-base-100">
+                <img src="/images/bg-home.png" alt="bg home" class="w-full h-full object-cover object-center absolute lg:top-0 top-12 opacity-40">
+                <div class="absolute left-0 -bottom-2 w-full  p-4 text-base-content bg-gradient-to-t from-base-100 pt-24">
                     <h1 class="font-maisonneue font-bold text-md">Selamat datang di Hayago!</h1>
                     <p class="text-sm">Gunakan mission planner dalam beberapa langkah mudah</p>
                     <div class="mt-2">
@@ -14,7 +14,7 @@
                     </div>
                     <div class="divider text-sm">atau</div>
                     <div class="mt-2">
-                        <button @click="$router.replace('/login')" class="btn text-white rounded-2xl w-full font-maisonneue">Lanjut dengan Email</button>
+                        <button @click="$router.replace('/login')" class="btn rounded-2xl w-full font-maisonneue">Lanjut dengan Email</button>
                     </div>
                     <div class="my-4 flex items-center justify-center">
                         <img src="/images/logo.png" class="w-10" alt="Hayago logo">

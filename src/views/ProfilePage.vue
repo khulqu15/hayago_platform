@@ -17,7 +17,14 @@
                             <div>{{ user.email }}</div>
                         </div>
                    </div>
-                   <button @click="onLogout()" class="btn bg-red-500 w-full text-white mt-12">Logout</button>
+                   <div @click="changeTheme()" class="bg-base-200 flex items-center justify-between p-4 rounded-xl mt-4">
+                        <div class="flex items-center gap-x-2">
+                            <Icon :icon="`material-symbols:${theme}-mode`" class="text-xl" />
+                            <span>Appearance</span>
+                        </div>
+                        <div class="font-semibold uppercase">{{ theme }}</div>
+                   </div>
+                   <button @click="onLogout()" class="btn bg-red-500 w-full text-white mt-4">Logout</button>
                 </div>
             </div>
         </ion-content>
@@ -30,11 +37,15 @@ import { onMounted, ref, Ref } from 'vue'
 import { getDatabase, ref as dbRef, set, get } from 'firebase/database'
 import { useRouter } from 'vue-router';
 
+const theme: Ref<string> = ref('dark')
 const user: any = ref({})
 const database = getDatabase()
 const router = useRouter()
 
 onMounted(() => {
+    const localTheme = localStorage.getItem('theme')
+    if(localTheme != null || localTheme != undefined) theme.value = localTheme
+    else theme.value = 'dark'
     const uid = sessionStorage.getItem("uid")
     if(uid != null || uid != undefined) {
         get(dbRef(database, 'users/'+uid))
@@ -47,6 +58,13 @@ onMounted(() => {
         })
     }
 })
+
+function changeTheme() {
+    if(theme.value == 'dark') theme.value = 'light'
+    else theme.value = 'dark'
+    document.querySelector('html')?.setAttribute('data-theme', theme.value)
+    localStorage.setItem('theme', theme.value)
+}
 
 function onLogout() {
     sessionStorage.removeItem('uid')
