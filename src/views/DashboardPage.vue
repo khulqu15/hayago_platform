@@ -7,7 +7,7 @@
                         <Icon icon="mingcute:search-line" class="text-xl"/>
                         <input type="text" class="bg-base-300 w-full p-1" placeholder="Cari menu, data, artikel">
                     </div>
-                    <img @click="$router.replace('/profile')" role="button" src="/images/avatar.png" alt="Avatar Hayago" class="w-12">
+                    <img @click="$router.replace('/profile')" role="button" :src="photoUrl ? photoUrl : '/images/avatar.png'" alt="Avatar Hayago" class="w-12 rounded-full">
                 </div>
                 <div class="w-full max-h-[40vh] bg-blue-600 relative overflow-hidden">
                     <img src="/images/bg-home.png" class="w-full h-full object-cover object-center" alt="">
@@ -48,8 +48,12 @@ import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 const menu: Ref<any> = ref({})
 const database = getDatabase()
 const storage = getStorage()
+const photoUrl: Ref<string|null> = ref(null)
+const role: Ref<string> = ref('user')
 
 onMounted(async () => {
+    const localUser = JSON.parse(sessionStorage.getItem('user')!)
+    photoUrl.value = localUser.photoURL
     get(dbRef(database, 'menu/'))
     .then(async (snapshot) => {
         const data = snapshot.val()
@@ -60,6 +64,12 @@ onMounted(async () => {
         }))
         menu.value = menuData
         console.log(menu.value)
+    })
+    get(dbRef(database, 'users/'+sessionStorage.getItem('uid')+'/role'))
+    .then((snapshot) => {
+        if(snapshot.val() != null) {
+            role.value = snapshot.val()
+        }
     })
 })
 

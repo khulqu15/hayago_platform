@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue'
-import { ref, Ref } from 'vue'
+import { onMounted, ref, Ref } from 'vue'
 import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth'
 import { getDatabase, ref as dbRef, set } from 'firebase/database'
 import { useRouter } from 'vue-router'
@@ -85,6 +85,10 @@ const next: Ref<boolean> = ref(false)
 const password: Ref<string> = ref('12345678')
 const showPassword: Ref<boolean> = ref(false)
 
+onMounted(() => {
+    const uid = sessionStorage.getItem('uid')
+    if(uid != null || uid != undefined) router.replace('/dashboard')
+})
 
 async function onSubmit() {
     if(!next.value) next.value = true

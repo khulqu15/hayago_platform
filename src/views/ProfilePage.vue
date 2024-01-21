@@ -7,12 +7,12 @@
                         <Icon role="button" @click="$router.replace('/dashboard')" icon="akar-icons:arrow-left" class="text-xl text-base-content"/>
                         <h2 class="uppercase font-maisonneue font-bold">Profile</h2>
                     </div>
-                    <img @click="$router.replace('/profile')" role="button" src="/images/avatar.png" alt="Avatar Hayago" class="w-12">
+                    <img @click="$router.replace('/profile')" role="button" :src="user.photoUrl ? user.photoUrl : '/images/avatar.png'" alt="Avatar Hayago" class="w-12 rounded-full">
                 </div>
                 <div class="px-4 pt-24 text-base-content">
                    <div class="flex justify-center">
                         <div class="text-center">
-                            <img role="button" src="/images/avatar.png" alt="Avatar Hayago" class="w-24 inline-block">
+                            <img role="button" :src="user.photoUrl ? user.photoUrl : '/images/avatar.png'" alt="Avatar Hayago" class="w-24 inline-block rounded-full">
                             <h3 class="font-maisonneue font-bold mt-4">{{ user.name }}</h3>
                             <div>{{ user.email }}</div>
                         </div>
@@ -51,7 +51,9 @@ onMounted(() => {
         get(dbRef(database, 'users/'+uid))
         .then((snapshot) => {
             if(snapshot.exists()) {
+                const localUser = JSON.parse(sessionStorage.getItem('user')!) 
                 user.value = snapshot.val()
+                user.value.photoUrl = localUser.photoURL
             } else {
                 onLogout()
             }

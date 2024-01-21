@@ -63,11 +63,17 @@
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
 import { getDatabase, ref as dbRef, get, set } from "firebase/database"
+import { onMounted, Ref, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const auth = getAuth()
 const database = getDatabase()
 const router = useRouter()
+
+onMounted(() => {
+    const uid = sessionStorage.getItem('uid')
+    if(uid != null || uid != undefined) router.replace('/dashboard')
+})
 
 function signInGoogle() {
     const provider = new GoogleAuthProvider()

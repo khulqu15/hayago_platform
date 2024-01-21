@@ -7,7 +7,7 @@
                         <Icon role="button" @click="$router.replace('/dashboard')" icon="akar-icons:arrow-left" class="text-xl text-base-content"/>
                         <h2 class="uppercase font-maisonneue font-bold">{{ $route.params.key }}</h2>
                     </div>
-                    <img @click="$router.replace('/profile')" role="button" src="/images/avatar.png" alt="Avatar Hayago" class="w-12">
+                    <img @click="$router.replace('/profile')" role="button" :src="photoUrl ? photoUrl : '/images/avatar.png'" alt="Avatar Hayago" class="w-12 rounded-full">
                 </div>
                 <div class="px-4 pt-24 text-base-content">
                     <div v-if="menu.title != null || menu.title != undefined" class="flex justify-center gap-3 items-center">
@@ -30,24 +30,28 @@
                     <div class="py-4 space-y-4" v-if="menu.data != null || menu.data != undefined">
                         <div v-for="(item, index) in menu.data" :key="index" class="space-y-3">
                             <h1 class="uppercase font-maisonneue font-bold">{{ item.key }}</h1>
-                            <div v-for="(coordinate, index) in item.data" :key="index" class="w-full hover:bg-base-200 p-3 hover:shadow-xl gap-4 rounded-xl grid grid-cols-3">
-                                <div>
-                                    <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">X</span> {{ coordinate.split(',')[0].trim() }}
+                            <div tabindex="0" v-for="(coordinate, index) in item.data" :key="index" class="collapse w-full hover:bg-base-200 hover:shadow-xl gap-x-4 rounded-xl">
+                                <div class="collapse-title grid grid-cols-3">
+                                    <div>
+                                        <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">X</span> {{ coordinate.split(',')[0].trim() }}
+                                    </div>
+                                    <div>
+                                        <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Y</span> {{ coordinate.split(',')[1].trim() }}
+                                    </div>
+                                    <div>
+                                        <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Z</span> {{ coordinate.split(',')[2].trim() }}
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Y</span> {{ coordinate.split(',')[1].trim() }}
-                                </div>
-                                <div>
-                                    <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Z</span> {{ coordinate.split(',')[2].trim() }}
-                                </div>
-                                <div>
-                                    <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Roll</span> {{ coordinate.split(',')[3].trim() }}
-                                </div>
-                                <div>
-                                    <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Pitch</span> {{ coordinate.split(',')[4].trim() }}
-                                </div>
-                                <div>
-                                    <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Yaw</span> {{ coordinate.split(',')[5].trim() }}
+                                <div class="collapse-content grid grid-cols-3">
+                                    <div>
+                                        <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Roll</span> {{ coordinate.split(',')[3].trim() }}
+                                    </div>
+                                    <div>
+                                        <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Pitch</span> {{ coordinate.split(',')[4].trim() }}
+                                    </div>
+                                    <div>
+                                        <span class="p-2 bg-blue-600 font-bold rounded-lg text-white">Yaw</span> {{ coordinate.split(',')[5].trim() }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -74,8 +78,11 @@ const menu: Ref<any> = ref({})
 const route = useRoute()
 const database = getDatabase()
 const storage = getStorage()
+const photoUrl: Ref<any> = ref(null)
 
 onMounted(async () => {
+    const localUser = JSON.parse(sessionStorage.getItem('user')!)
+    photoUrl.value = localUser.photoURL
     get(dbRef(database, 'menu/'+route.params.key))
     .then(async (snapshot) => {
         const data = snapshot.val()
