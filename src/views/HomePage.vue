@@ -53,6 +53,9 @@
                         </div>
                     </div>
                 </div>
+                <notifications :key="key" :type="notification.type" :message="notification.message" :is-visible="notification.visibility">
+                    <button @click="notification.visibility = !notification.visibility" class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
+                </notifications>
             </div>
         </ion-content>
     </ion-page>
@@ -65,9 +68,16 @@ import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
 import { getDatabase, ref as dbRef, get, set } from "firebase/database"
 import { onMounted, Ref, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Notifications from '@/components/Notifications.vue'
 
 const auth = getAuth()
 const database = getDatabase()
+const key = ref(Date.now())
+const notification = ref({
+    message: '',
+    type: 'warning',
+    visibility: false
+})
 const router = useRouter()
 
 onMounted(() => {
@@ -76,6 +86,7 @@ onMounted(() => {
 })
 
 function signInGoogle() {
+    console.log(notification.value)
     const provider = new GoogleAuthProvider()
     signInWithPopup(auth, provider)
     .then((result) => {
@@ -85,9 +96,15 @@ function signInGoogle() {
         sessionStorage.setItem('user', JSON.stringify(user))
         sessionStorage.setItem('uid', user.uid)
         sessionStorage.setItem('access_token', token!)
+        setNotification('Login Berhasil', 'success', true)
         get(dbRef(database, 'users/'+user.uid)).then((snapshot) => {
             console.log(snapshot.val())
-            if(snapshot.val() != null) router.replace('/pin')
+            if(snapshot.val() != null) {
+                setTimeout(() => {
+                    setNotification('Login Berhasil', 'success', false)
+                    router.replace('/pin')
+                }, 1000)
+            }
             else {
                 set(dbRef(database, 'users/'+user.uid), {
                     status: 'active',
@@ -108,6 +125,20 @@ function signInGoogle() {
         console.log(errorMessage)
         console.log("credential : ")
         console.log(credential)
+        notification.value = {
+            message: errorMessage,
+            type: 'error',
+            visibility: true
+        }
     })
+}
+
+function setNotification(msg: string, type: string, visibility: boolean) {
+    notification.value = {
+        message: msg,
+        type: type,
+        visibility: visibility
+    }
+    key.value = Date.now()
 }
 </script>
