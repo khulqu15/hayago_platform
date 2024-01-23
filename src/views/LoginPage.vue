@@ -56,15 +56,21 @@
                 </div>
               </div>
               <div class="mt-2">
-                <button type="submit" class="btn font-maisonneue bg-blue-600 text-white rounded-2xl w-full">Lanjut</button>
+                <button type="submit" class="btn font-maisonneue bg-blue-600 text-white rounded-2xl w-full">{{ next ? "Login" : "Lanjut" }}</button>
               </div>
             </form>
+            <div class="mt-2">
+              <button @click="$router.replace('/register')" class="btn font-maisonneue text-white rounded-2xl w-full">Register</button>
+            </div>
             <button @click="$router.replace('/reset')" class="btn rounded-xl mt-3 bg-base-100 border">Lupa atau ada kendala ?</button>
             <div class="my-4 flex items-center justify-center">
               <img src="/images/logo.png" class="w-10" alt="Hayago logo" />
             </div>
           </div>
         </div>
+        <notifications :key="key" :type="notification.type" :message="notification.message" :is-visible="notification.visibility">
+          <button @click="notification.visibility = !notification.visibility" class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
+        </notifications>
       </div>
     </ion-content>
   </ion-page>
@@ -76,12 +82,16 @@ import { onMounted, ref, Ref } from "vue";
 import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { getDatabase, ref as dbRef, set } from "firebase/database";
 import { useRouter } from "vue-router";
-import SuccessNotification from "@/components/SuccessNotification.vue";
-import FailedNotification from "@/components/FailedNotification.vue";
-import WarningNotification from "@/components/WarningNotification.vue";
+import Notifications from "@/components/Notifications.vue";
 
 const auth = getAuth();
 const database = getDatabase();
+const key = ref(Date.now());
+const notification = ref({
+  message: "",
+  type: "warning",
+  visibility: false,
+});
 const router = useRouter();
 const email: Ref<string> = ref("khusnul.ninno15@gmail.com");
 const next: Ref<boolean> = ref(false);
@@ -96,7 +106,7 @@ onMounted(() => {
 async function onSubmit() {
   if (!next.value) next.value = true;
   else {
-    registerUser();
+    loginUser();
   }
 }
 
@@ -106,28 +116,39 @@ async function loginUser() {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user;
     sessionStorage.setItem("uid", user.uid);
+    setNotification("Login Berhasil", "success", true);
     await set(dbRef(database, "users/" + user.uid + "/status"), "active");
     router.replace("/pin");
   } catch (error) {
+    setNotification("Login Gagal", "error", true);
     console.log(error);
   }
 }
 
-async function registerUser() {
-  try {
-    console.log("Register");
-    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
-    const user = userCredential.user;
-    sessionStorage.setItem("uid", user.uid);
-    await sendEmailVerification(user);
-    await set(dbRef(database, "users/" + user.uid), {
-      email: user.email,
-      uid: user.uid,
-      status: "active",
-    });
-    router.replace("/register");
-  } catch (error) {
-    loginUser();
-  }
+// async function registerUser() {
+//   try {
+//     console.log("Register");
+//     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+//     const user = userCredential.user;
+//     sessionStorage.setItem("uid", user.uid);
+//     await sendEmailVerification(user);
+//     await set(dbRef(database, "users/" + user.uid), {
+//       email: user.email,
+//       uid: user.uid,
+//       status: "active",
+//     });
+//     router.replace("/register");
+//   } catch (error) {
+//     loginUser();
+//   }
+// }
+
+function setNotification(msg: string, type: string, visibility: boolean) {
+  notification.value = {
+    message: msg,
+    type: type,
+    visibility: visibility,
+  };
+  key.value = Date.now();
 }
 </script>

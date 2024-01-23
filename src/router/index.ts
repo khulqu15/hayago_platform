@@ -1,58 +1,69 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
-import TabsPage from '@/views/TabsPage.vue'
+import { createRouter, createWebHistory } from "@ionic/vue-router";
+import { RouteRecordRaw } from "vue-router";
+import TabsPage from "@/views/TabsPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
-    component: () => import('@/views/HomePage.vue')
+    path: "/",
+    component: () => import("@/views/HomePage.vue"),
   },
   {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/LoginPage.vue')
+    path: "/login",
+    name: "Login",
+    component: () => import("@/views/LoginPage.vue"),
   },
   {
-    path: '/register',
-    name: 'Register',
-    component: () => import('@/views/RegisterPage.vue')
+    path: "/register",
+    name: "Register",
+    component: () => import("@/views/RegisterPage.vue"),
   },
   {
-    path: '/pin',
-    name: 'Pin',
-    component: () => import('@/views/PinPage.vue')
+    path: "/pin",
+    name: "Pin",
+    component: () => import("@/views/PinPage.vue"),
   },
   {
-    path: '/reset',
-    name: 'Reset',
-    component: () => import('@/views/ResetPage.vue')
+    path: "/reset",
+    name: "Reset",
+    component: () => import("@/views/ResetPage.vue"),
   },
   {
-    path: '/dashboard/',
+    path: "/dashboard/",
     component: TabsPage,
     children: [
       {
-        path: '',
-        name: 'Dashboard',
-        component: () => import('@/views/DashboardPage.vue')
+        path: "",
+        name: "Dashboard",
+        component: () => import("@/views/DashboardPage.vue"),
       },
       {
-        path: '/menu/:key',
-        name: 'MenuDetail',
-        component: () => import('@/views/MenuPage.vue')
+        path: "/menu/:key",
+        name: "MenuDetail",
+        component: () => import("@/views/MenuPage.vue"),
       },
       {
-        path: '/profile',
-        name: 'Profile',
-        component: () => import('@/views/ProfilePage.vue')
+        path: "/profile",
+        name: "Profile",
+        component: () => import("@/views/ProfilePage.vue"),
+      },
+    ],
+    meta: {
+      requiresAuth: true,
+    },
+    beforeEnter: (to, from, next) => {
+      const uid = sessionStorage.getItem("uid");
+      if (uid) {
+        next();
+      } else {
+        next("/");
       }
-    ]
-  }
-]
+    },
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;
