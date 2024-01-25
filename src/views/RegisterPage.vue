@@ -38,7 +38,7 @@
             <div v-if="!inputCredential">
               <h1 class="font-maisonneue font-bold text-md">Selamat datang di Hayago!</h1>
               <p class="text-sm">Silahkan registrasi terlebih dahulu.</p>
-              <form @submit.prevent="registerUser()">
+              <form @submit.prevent="onSubmit()">
                 <div class="form-control mt-4">
                   <label for="email" class="text-sm mb-2">Email <span class="text-red-500">*</span></label>
                   <div class="flex items-center gap-x-3">
@@ -47,7 +47,7 @@
                     <Icon v-if="email.length > 0" @click="email = ''" icon="uis:times-circle" class="text-2xl" />
                   </div>
                 </div>
-                <div class="form-control mt-2">
+                <div v-if="next" class="form-control mt-2">
                   <label for="email" class="text-sm mb-2">Password <span class="text-red-500">*</span></label>
                   <div class="flex items-center gap-x-3">
                     <Icon @click="showPassword = !showPassword" icon="tabler:eye-filled" class="text-xl" />
@@ -56,7 +56,7 @@
                   </div>
                 </div>
                 <div class="mt-2">
-                  <button type="submit" class="btn font-maisonneue bg-blue-600 text-white rounded-2xl w-full" @click="inputCredential = true">Lanjut</button>
+                  <button type="submit" class="btn font-maisonneue bg-blue-600 text-white rounded-2xl w-full">Lanjut</button>
                 </div>
               </form>
             </div>
@@ -64,7 +64,7 @@
               <div v-if="!pinContent">
                 <h1 class="font-maisonneue font-bold text-md">Isikan data akumnu!</h1>
                 <p class="text-sm">Satu langkah lebih dekat menggunakan Hayago.</p>
-                <form @submit.prevent="registerUser()">
+                <form @submit.prevent="registerIdentity()">
                   <div class="form-control mt-4">
                     <label for="name" class="text-sm mb-2">Nama <span class="text-red-500">*</span></label>
                     <div class="flex items-center gap-x-3">
@@ -87,7 +87,7 @@
                     </div>
                   </div>
                   <div class="mt-2">
-                    <button type="submit" class="btn font-maisonneue bg-blue-600 text-white rounded-2xl w-full" @click="pinContent = true">Lanjut</button>
+                    <button type="submit" class="btn font-maisonneue bg-blue-600 text-white rounded-2xl w-full">Lanjut</button>
                   </div>
                 </form>
               </div>
@@ -150,6 +150,7 @@ const birthday: Ref<string> = ref("");
 const address: Ref<string> = ref("");
 const email: Ref<string> = ref("khusnul.ninno15@gmail.com");
 const password: Ref<string> = ref("");
+const next: Ref<boolean> = ref(false);
 const showPassword: Ref<boolean> = ref(false);
 const inputCredential: Ref<boolean> = ref(false);
 const router = useRouter();
@@ -167,54 +168,68 @@ onMounted(() => {
   if (uid != null || uid != undefined) router.replace("/dashboard");
   // const uid = sessionStorage.getItem("uid");
   // if (uid == undefined || uid == null) router.replace("/login");
-  user.value = uid;
-  console.log(user.value);
-  const nextInput = document.getElementById(`digit1`);
-  nextInput?.focus();
-  const userSession = JSON.parse(sessionStorage.getItem("user")!);
-  console.log(userSession);
-  if (userSession != null || userSession != undefined) {
-    name.value = userSession.displayName;
-  }
+  // user.value = uid;
+  // console.log(user.value);
+  // const nextInput = document.getElementById(`digit1`);
+  // nextInput?.focus();
+  // const userSession = JSON.parse(sessionStorage.getItem("user")!);
+  // console.log(userSession);
+  // if (userSession != null || userSession != undefined) {
+  //   name.value = userSession.displayName;
+  // }
 });
+
+async function onSubmit() {
+  if (!next.value) next.value = true;
+  else {
+    registerUser();
+  }
+}
 
 async function registerUser() {
   try {
     console.log("Register");
     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user;
-    const pin = digit1.value + digit2.value + digit3.value + digit4.value + digit5.value + digit6.value;
     sessionStorage.setItem("uid", user.uid);
     await sendEmailVerification(user);
     await set(dbRef(database, "users/" + user.uid), {
       email: user.email,
       uid: user.uid,
       status: "active",
-      name: name.value,
-      birthday: birthday.value,
-      address: address.value,
-      pin: pin,
     });
+    console.log(user.email);
+    console.log(user.uid);
+    console.log("Credential saved");
+    inputCredential.value = true;
   } catch (error) {
-    setNotification("Registrasi Gagal", "error", true);
     console.log(error);
   }
 }
 
-// async function registerIdentity() {
-//   // await set(dbRef(database, "users/" + user.value + "/name"), name.value);
-//   // await set(dbRef(database, "users/" + user.value + "/birthday"), birthday.value);
-//   // await set(dbRef(database, "users/" + user.value + "/address"), address.value);
-//   pinContent.value = true;
-// }
+async function registerIdentity() {
+  try {
+    console.log("identity");
+    const uid = sessionStorage.getItem("uid");
+    await set(dbRef(database, "users/" + uid + "/name"), name.value);
+    await set(dbRef(database, "users/" + uid + "/birthday"), birthday.value);
+    await set(dbRef(database, "users/" + uid + "/address"), address.value);
+    setNotification("Login Berhasil", "success", true);
+    pinContent.value = true;
+  } catch (error) {
+    setNotification("Login Gagal", "error", true);
+    console.log(error);
+  }
+}
 
 const nextStep = (nextInputId: any) => {
   if (nextInputId <= 6) {
     const nextInput = document.getElementById(`digit${nextInputId}`);
     nextInput?.focus();
   } else {
+    const uid = sessionStorage.getItem("uid");
     const pin = digit1.value + digit2.value + digit3.value + digit4.value + digit5.value + digit6.value;
-    set(dbRef(database, "users/" + user.value + "/pin"), pin);
+    set(dbRef(database, "users/" + uid + "/pin"), pin);
     setNotification("Login Berhasil", "success", true);
     router.replace("/dashboard");
   }
